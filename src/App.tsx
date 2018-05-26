@@ -95,16 +95,16 @@ class App extends React.Component<AppProps, {
               !this.state.scenarioCount ? <LinearProgress variant='indeterminate'/> : <Switch>
                 <Route exact path='/' component={QuestionPage}/>
                 <Route exact path='/:id' render={({ match }) => {
-                  console.log(this.state.scenarioCount)
-                  if (match.params.id > this.state.scenarioCount) {
-                    return <Typography variant='headline'>Question not found</Typography>
+                  if (match.params.id >= this.state.scenarioCount) {
+                    return <Typography variant='headline' style={{
+                      textAlign: 'center'
+                    }}>Question not found</Typography>
                   }
 
                   return <QuestionPage/>
                 }}/>
                 <Route exact path='/:idA/:idB' render={({ match }) => {
-                  console.log(this.state.scenarioCount)
-                  if (match.params.idA > this.state.scenarioCount || match.params.idB > this.state.scenarioCount) {
+                  if (match.params.idA >= this.state.scenarioCount || match.params.idB >= this.state.scenarioCount) {
                     return <Typography variant='headline'>Question not found</Typography>
                   }
 
