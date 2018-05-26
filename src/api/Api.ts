@@ -4,8 +4,8 @@ import Nebulas from '../nebulify/Nebulas'
 import Account from '../nebulify/Account'
 import { Question } from '../models/Question'
 
-export const testnetContractAddress = 'n1iLrHHuzR1A14UFEYyWGM8sueQur5Me84X'
-export const mainnetContractAddress = 'n1rVwF6qVgs4fiHVCx3vU2qRp6xfhsUSGZT'
+export const testnetContractAddress = 'n1hmFq3UqbFCUgm6eNajZ3nxLLvwMSP1BxK'
+export const mainnetContractAddress = 'n1gPix5ZnSzxKkdrUJtZmQzLLS9SyxYa5qL'
 export const cryptoEitherAccount = Account.fromAddress('n1FhdXhRaDQWvCMwC29JBMuuCxUczUuecYU')
 
 export type CallResult = NebulasCallResult & {
@@ -33,8 +33,7 @@ export default class Api {
   constructor() {
     this.nebulas = new Nebulas()
 
-    // TODO: Change this to mainnet in prod
-    this.setApi(true)
+    this.setApi(false)
 
     this.nebPay = new NebulasPay()
   }
@@ -91,7 +90,10 @@ export default class Api {
             }
 
             try {
-              resolve(JSON.parse(json))
+              resolve({
+                ...JSON.parse(json),
+                serialNumber: response.serialNumber
+              })
             } catch (error) {
               throw new Error(json)
             }
