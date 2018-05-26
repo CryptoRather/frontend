@@ -99,7 +99,8 @@ class QuestionPage extends React.Component<QuestionPageProps, {
   lerpingPercentage: boolean,
   updated: boolean,
   snackbarOpen: boolean,
-  loadingVoteCounts: boolean
+  loadingVoteCounts: boolean,
+  questionHistory: Question[]
 }> {
   state = {
     question: null as Question,
@@ -108,7 +109,8 @@ class QuestionPage extends React.Component<QuestionPageProps, {
     lerpingPercentage: false,
     updated: false,
     snackbarOpen: false,
-    loadingVoteCounts: false
+    loadingVoteCounts: false,
+    questionHistory: []
   }
 
   async componentWillMount() {
@@ -135,10 +137,15 @@ class QuestionPage extends React.Component<QuestionPageProps, {
     question.scenarioA.scenario = _.upperFirst(question.scenarioA.scenario)
     question.scenarioB.scenario = _.upperFirst(question.scenarioB.scenario)
 
+    const questionHistory = this.state.questionHistory
+
+    questionHistory.push(question)
+
     this.setState({
       question,
       showVoteCounts: false,
-      updated: true
+      updated: true,
+      questionHistory
     })
   }
 
@@ -164,18 +171,23 @@ class QuestionPage extends React.Component<QuestionPageProps, {
       return
     }
 
-    while (question.scenarioA === null || question.scenarioB === null) {
+    while (question.scenarioA === null || question.scenarioB === null || _.takeRight(this.state.questionHistory, 30).includes(question)) {
       question = (await api.get(match.params.id))
     }
 
     question.scenarioA.scenario = _.upperFirst(question.scenarioA.scenario)
     question.scenarioB.scenario = _.upperFirst(question.scenarioB.scenario)
 
+    const questionHistory = this.state.questionHistory
+
+    questionHistory.push(question)
+
     this.setState({
       question,
       showVoteCounts: false,
       updated: true,
-      optionA: false
+      optionA: false,
+      questionHistory
     })
   }
 
@@ -195,6 +207,11 @@ class QuestionPage extends React.Component<QuestionPageProps, {
 
       api.vote(this.state.question, optionA).then((response: any) => {
         if (typeof response.response === 'string' && response.response as string === 'Error: Transaction rejected by user') {
+          this.setState({
+            loadingVoteCounts: false,
+            showVoteCounts: false
+          })
+
           return
         }
 

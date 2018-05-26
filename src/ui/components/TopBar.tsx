@@ -42,17 +42,12 @@ class TopBar extends React.Component<TopBarProps, {
   showSubmitDialog: boolean
 }> {
   state = {
-    // TODO: This should be Mainnet in prod
-    currentEndpoint: 'Testnet',
+    currentEndpoint: 'Mainnet',
     showSubmitDialog: false
   }
 
   constructor(props: any) {
     super(props)
-  }
-
-  handleDialogSubmitClick = () => {
-
   }
 
   render() {
@@ -62,9 +57,16 @@ class TopBar extends React.Component<TopBarProps, {
         <AppBar position='absolute' className={classes.appBar}>
           <Toolbar>
             <img src={Logo} className={classes.titleIcon} onClick={() => this.props.history.push('/')}/>
-            <Typography variant='title' color='inherit' className={classNames(classes.flex)}>
+            <Typography variant='title' color='inherit' >
               <a className={classes.title} onClick={() => this.props.history.push('/')}>CryptoRather</a>
             </Typography>
+            <Typography style={{
+              color: 'white',
+              marginTop: '2px',
+              marginLeft: '10px'
+            }} className={classNames(classes.flex)}>powered by <a style={{
+              color: 'white'
+            }} href='https://nebulas.io/' target='_blank'>Nebulas</a></Typography>
             <Button color='inherit' onClick={() => this.setState({
               showSubmitDialog: true
             })}>
