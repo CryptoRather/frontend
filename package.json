@@ -4,8 +4,7 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^1.0.0",
-    "@material-ui/icons": "^1.0.0-beta.43",
-    "@tweenjs/tween.js": "^17.2.0",
+    "@material-ui/icons": "^1.1.0",
     "bignumber.js": "7.0.0",
     "classnames": "^2.2.5",
     "core-js": "^2.5.6",
