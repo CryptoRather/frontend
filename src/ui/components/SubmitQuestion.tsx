@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, IconButton, Input, InputLabel, Snackbar, TextField } from '@material-ui/core'
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, IconButton, Input, InputLabel, Snackbar, TextField, Typography } from '@material-ui/core'
 import { withApi } from '../../api/withApi'
 import Api from '../../api/Api'
 
@@ -13,7 +13,8 @@ export default class SubmitQuestion extends React.Component<{
   redOptionText: string,
   showDialog: boolean,
   isLoading: boolean,
-  snackbarOpen: boolean,
+  showFinishedDialog: boolean,
+  submittedId: number,
   errors: {
     blueOptionText: string,
     redOptionText: string
@@ -24,7 +25,8 @@ export default class SubmitQuestion extends React.Component<{
     redOptionText: '',
     showDialog: false,
     isLoading: false,
-    snackbarOpen: true,
+    showFinishedDialog: false,
+    submittedId: null,
     errors: {
       blueOptionText: '',
       redOptionText: ''
@@ -94,7 +96,7 @@ export default class SubmitQuestion extends React.Component<{
       isLoading: true
     })
 
-    this.props.api.add(this.state.blueOptionText, this.state.redOptionText).then((response: any) => {
+    this.props.api.add(this.state.blueOptionText, this.state.redOptionText).then(async (response: any) => {
       if (typeof response.response === 'string' && response.response as string === 'Error: Transaction rejected by user') {
         this.setState({
           showDialog: false,
@@ -106,15 +108,32 @@ export default class SubmitQuestion extends React.Component<{
           redOptionText: ''
         })
 
+        this.setState({
+          isLoading: false,
+          showDialog: false
+        })
+
         this.props.onClose()
+      } else {
+        this.setState({
+          submittedId: await this.props.api.getScenarioCount()
+        })
+
+        const timer = setInterval(async () => {
+          const result = JSON.parse((await this.props.api.getTransactionInfo(response.serialNumber)))
+
+          if (result.data.status === 1) {
+            clearInterval(timer)
+
+            this.setState({
+              isLoading: false,
+              showDialog: false,
+              showFinishedDialog: true
+            })
+          }
+        }, 10100)
       }
-
-      this.setState({
-        isLoading: false,
-        showDialog: false
-      })
     })
-
   }
 
   handleBlueOptionChange = (event) => {
@@ -140,55 +159,99 @@ export default class SubmitQuestion extends React.Component<{
   render() {
     return (
       <React.Fragment>
-        <Dialog disableBackdropClick disableEscapeKeyDown open={this.state.showDialog}>
-          <DialogTitle>{this.state.isLoading ? 'Submitting...' : 'Submit a question'}</DialogTitle>
-          <DialogContent style={this.state.isLoading ? {
-            flex: 1,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row'
-          } : {
-            width: '450px'
-          }}>
-            {
-              this.state.isLoading ? <CircularProgress/> : <React.Fragment>
-                <FormControl fullWidth error={this.state.errors.blueOptionText.length > 0}>
-                  <InputLabel htmlFor='blueOption'>Blue option</InputLabel>
-                  <Input id='blueOption' value={this.state.blueOptionText} onChange={this.handleBlueOptionChange} multiline fullWidth/>
-                  <FormHelperText>{this.state.errors.blueOptionText}</FormHelperText>
-                </FormControl>
-                <FormControl fullWidth error={this.state.errors.redOptionText.length > 0}>
-                  <InputLabel htmlFor='redOption'>Red option</InputLabel>
-                  <Input id='redOption' value={this.state.redOptionText} onChange={this.handleRedOptionChange} multiline fullWidth/>
-                  <FormHelperText>{this.state.errors.redOptionText}</FormHelperText>
-                </FormControl>
-              </React.Fragment>
-            }
-          </DialogContent>
-          {
-            !this.state.isLoading && <DialogActions>
-                <Button onClick={() => {
-                  this.setState({
-                    showDialog: false,
-                    blueOptionText: '',
-                    errors: {
-                      blueOptionText: '',
-                      redOptionText: ''
-                    },
-                    redOptionText: ''
-                  })
+        {
+          this.state.showDialog ? <Dialog disableBackdropClick disableEscapeKeyDown open={this.state.showDialog}>
+              <DialogTitle>{this.state.isLoading ? 'Submitting...' : 'Submit a question'}</DialogTitle>
+              <DialogContent style={this.state.isLoading ? {
+                flex: 1,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row'
+              } : {
+                width: '450px'
+              }}>
+                {
+                  this.state.isLoading ? <CircularProgress/> : <React.Fragment>
+                    <FormControl fullWidth error={this.state.errors.blueOptionText.length > 0}>
+                      <InputLabel htmlFor='blueOption'>Blue option</InputLabel>
+                      <Input id='blueOption' value={this.state.blueOptionText} onChange={this.handleBlueOptionChange} multiline fullWidth/>
+                      <FormHelperText>{this.state.errors.blueOptionText}</FormHelperText>
+                    </FormControl>
+                    <FormControl fullWidth error={this.state.errors.redOptionText.length > 0}>
+                      <InputLabel htmlFor='redOption'>Red option</InputLabel>
+                      <Input id='redOption' value={this.state.redOptionText} onChange={this.handleRedOptionChange} multiline fullWidth/>
+                      <FormHelperText>{this.state.errors.redOptionText}</FormHelperText>
+                    </FormControl>
+                  </React.Fragment>
+                }
+              </DialogContent>
+              {
+                !this.state.isLoading && <DialogActions>
+                    <Button onClick={() => {
+                      this.setState({
+                        showDialog: false,
+                        showFinishedDialog: false,
+                        blueOptionText: '',
+                        errors: {
+                          blueOptionText: '',
+                          redOptionText: ''
+                        },
+                        redOptionText: ''
+                      })
 
-                  this.props.onClose()
-                }} color='secondary'>
-                    Cancel
-                </Button>
-                <Button onClick={this.handleDialogSubmitClick} color='primary'>
-                    Submit
-                </Button>
-            </DialogActions>
-          }
-        </Dialog>
+                      this.props.onClose()
+                    }} color='secondary'>
+                        Cancel
+                    </Button>
+                    <Button onClick={this.handleDialogSubmitClick} color='primary'>
+                        Submit
+                    </Button>
+                </DialogActions>
+              }
+            </Dialog>
+            : <Dialog open={this.state.showFinishedDialog} onClose={() => {
+              this.setState({
+                showDialog: false,
+                blueOptionText: '',
+                errors: {
+                  blueOptionText: '',
+                  redOptionText: ''
+                },
+                redOptionText: '',
+                showFinishedDialog: false
+              })
+
+              this.props.onClose()
+            }}>
+              <DialogTitle>Question submitted</DialogTitle>
+              <DialogContent>
+                {
+                  <Typography>Your question has been submitted successfully and you can check it out <a href={`${window.location.origin}/${this.state.submittedId}/${this.state.submittedId + 1}`} target='_blank'>here</a>.</Typography>
+                }
+              </DialogContent>
+              {
+                !this.state.isLoading && <DialogActions>
+                    <Button onClick={() => {
+                      this.setState({
+                        showDialog: false,
+                        blueOptionText: '',
+                        errors: {
+                          blueOptionText: '',
+                          redOptionText: ''
+                        },
+                        redOptionText: '',
+                        showFinishedDialog: false
+                      })
+
+                      this.props.onClose()
+                    }} color='primary'>
+                        Ok
+                    </Button>
+                </DialogActions>
+              }
+            </Dialog>
+        }
       </React.Fragment>
     )
   }

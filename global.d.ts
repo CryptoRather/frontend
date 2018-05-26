@@ -86,6 +86,7 @@ interface ContractCallResult {
   result: any
   executionError: string
   estimatedGas: number
+  serialNumber: string
 }
 
 interface Contract {
