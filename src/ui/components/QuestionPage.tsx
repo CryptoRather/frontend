@@ -193,7 +193,7 @@ class QuestionPage extends React.Component<QuestionPageProps, {
         loadingVoteCounts: true
       })
 
-      api.vote(this.state.question, optionA, true).then((response: any) => {
+      api.vote(this.state.question, optionA).then((response: any) => {
         if (typeof response.response === 'string' && response.response as string === 'Error: Transaction rejected by user') {
           return
         }
@@ -250,7 +250,6 @@ class QuestionPage extends React.Component<QuestionPageProps, {
     let scenarioBVotes = new BigNumber(0)
 
     if (question) {
-      console.log('da')
       allVotes = new BigNumber(question.scenarioA.votes).plus(question.scenarioB.votes)
 
       if (this.state.optionA !== null) {
@@ -261,8 +260,6 @@ class QuestionPage extends React.Component<QuestionPageProps, {
           scenarioAVotes = new BigNumber(question.scenarioA.votes)
           scenarioBVotes = new BigNumber(question.scenarioB.votes).plus(1)
         }
-
-        console.log('incremented all votes')
 
         allVotes = allVotes.plus(1)
       }
