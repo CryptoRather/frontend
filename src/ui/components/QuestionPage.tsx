@@ -125,8 +125,10 @@ class QuestionPage extends React.Component<QuestionPageProps, {
     } else {
       question = (await api.get(match.params.id || randomQuestionId.toString()))
 
-      if (!match.params.id) {
+      if (!match.params.id || !question) {
         history.push(`/${randomQuestionId}`)
+
+        return
       }
 
       while (question.scenarioA === null || question.scenarioB === null) {
@@ -165,7 +167,7 @@ class QuestionPage extends React.Component<QuestionPageProps, {
 
     let question: Question = (await api.get(match.params.id || questionId.toString()))
 
-    if (!match.params.id) {
+    if (!match.params.id || !question) {
       history.push(`/${questionId}`)
 
       return

@@ -42,9 +42,7 @@ export default class Api {
     try {
       let question
 
-      do {
-        question = await this.nebulasCall<Question>('get', [id], new BigNumber(0))
-      } while (question === null)
+      question = await this.nebulasCall<Question>('get', [id], new BigNumber(0))
 
       return question
     } catch {
